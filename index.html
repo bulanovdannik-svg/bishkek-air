@@ -1,0 +1,1222 @@
+<!DOCTYPE html>
+<html lang="ru" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Чистый Бишкек: Борьба со смогом</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Шрифты: Montserrat, Inter и JetBrains Mono -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;700;800&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Montserrat', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        obsidian: {
+                            950: '#0b0b0d',
+                            900: '#121216',
+                            850: '#16161b',
+                            800: '#1d1d24',
+                        },
+                        bordeaux: {
+                            400: '#eb4d6d',
+                            500: '#d9385a',
+                            600: '#b82946',
+                            700: '#8f1d35',
+                            800: '#631324',
+                            950: '#2a0a11',
+                        },
+                        cream: '#e8e4e6'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #0b0b0d;
+            color: #e8e4e6;
+        }
+        .card-surface {
+            background-color: #141418;
+            border: 1px solid #2a181e;
+            transition: border-color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
+        }
+        .card-surface:hover {
+            border-color: #631324;
+            box-shadow: 0 12px 35px -10px rgba(184, 41, 70, 0.22);
+        }
+        .bordeaux-glow {
+            background: radial-gradient(circle at 50% 0%, rgba(184, 41, 70, 0.22) 0%, rgba(11, 11, 13, 0) 70%);
+        }
+        .text-gradient-bordeaux {
+            background: linear-gradient(135deg, #eb4d6d 0%, #b82946 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        /* Кастомный скроллбар */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0b0b0d;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #631324;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #b82946;
+        }
+        canvas {
+            touch-action: none;
+        }
+    </style>
+</head>
+<body class="antialiased selection:bg-bordeaux-600 selection:text-white">
+
+    <!-- Навигация -->
+    <header class="sticky top-0 z-40 bg-obsidian-950/90 backdrop-blur-md border-b border-[#2a181e]">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 h-16 sm:h-20 flex items-center justify-between">
+            <a href="#" class="flex items-center gap-3 group">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-bordeaux-500 to-bordeaux-800 flex items-center justify-center text-white shadow-lg shadow-bordeaux-600/20 group-hover:scale-105 transition">
+                    <!-- Иконка гор и воздуха -->
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 17l6-8 4 5 3-4 5 7H3z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 20h16"/>
+                    </svg>
+                </div>
+                <div>
+                    <span class="font-display font-extrabold text-base sm:text-lg tracking-wide text-bordeaux-400 block leading-none">BISHKEK AIR</span>
+                    <span class="text-[11px] text-neutral-400 tracking-wider uppercase">Проект • 2026</span>
+                </div>
+            </a>
+
+            <nav class="hidden md:flex items-center gap-7 text-sm font-medium text-cream/80">
+                <a href="#reasons" class="hover:text-bordeaux-400 transition">Причины и решения</a>
+                <a href="#compare" class="hover:text-bordeaux-400 transition">Авто и Отопление</a>
+                <a href="#game" class="hover:text-bordeaux-400 transition">Игра «Чистое небо»</a>
+                <a href="#quiz" class="hover:text-bordeaux-400 transition">Опрос</a>
+            </nav>
+
+            <div class="flex items-center gap-3">
+                <a href="#game" class="bg-bordeaux-600 hover:bg-bordeaux-500 text-white text-xs sm:text-sm font-semibold px-4 py-2.5 rounded-xl transition shadow-md shadow-bordeaux-600/25">
+                    Очистить небо
+                </a>
+                <button id="menu-btn" class="md:hidden p-2 rounded-xl bg-obsidian-800 border border-[#2a181e] text-cream" aria-label="Меню">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Мобильное меню -->
+        <div id="mobile-nav" class="hidden md:hidden bg-obsidian-900 border-b border-[#2a181e] px-4 py-4 space-y-2 text-sm">
+            <a href="#reasons" class="block py-2 px-3 rounded-lg hover:bg-obsidian-800 text-cream">1. Откуда берется смог</a>
+            <a href="#compare" class="block py-2 px-3 rounded-lg hover:bg-obsidian-800 text-cream">2. ДВС, Гибриды, EV и Газ</a>
+            <a href="#game" class="block py-2 px-3 rounded-lg hover:bg-obsidian-800 text-bordeaux-400 font-semibold">3. Мини-игра: Очисти небо</a>
+            <a href="#quiz" class="block py-2 px-3 rounded-lg hover:bg-obsidian-800 text-cream">4. Проверка знаний (Опрос)</a>
+        </div>
+    </header>
+
+    <!-- 1. Главный экран (Hero) -->
+    <section class="relative pt-12 pb-20 sm:pt-20 sm:pb-28 bordeaux-glow border-b border-[#2a181e]">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
+                <!-- Левая часть -->
+                <div class="lg:col-span-7 space-y-6">
+                    <div class="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-bordeaux-950/90 border border-bordeaux-700/60 text-bordeaux-400 text-xs font-mono uppercase tracking-wider">
+                        <span class="w-2 h-2 rounded-full bg-bordeaux-500 animate-ping"></span>
+                        <span>Чуйская долина • Мониторинг PM2.5</span>
+                    </div>
+
+                    <h1 class="font-display font-black text-3xl sm:text-5xl lg:text-[52px] leading-[1.1] tracking-tight text-bordeaux-400">
+                        ЧИСТЫЙ БИШКЕК:<br>
+                        <span class="text-cream">БОРЬБА СО СМОГОМ</span>
+                    </h1>
+
+                    <p class="text-cream/85 text-base sm:text-lg leading-relaxed max-w-2xl">
+                        Каждую зиму наш город накрывает плотная серая дымка. Из-за котловинного рельефа холодный воздух запирает выхлопы старых машин без катализаторов и дым от печей прямо над улицами. Разбираемся, как переход на <span class="text-bordeaux-400 font-semibold">газовое отопление</span>, <span class="text-bordeaux-400 font-semibold">гибриды и электрокары</span> меняет ситуацию уже сейчас.
+                    </p>
+
+                    <div class="flex flex-wrap gap-4 pt-2">
+                        <a href="#compare" class="bg-bordeaux-600 hover:bg-bordeaux-500 text-white font-semibold px-6 py-3.5 rounded-xl transition shadow-lg shadow-bordeaux-600/25 flex items-center gap-2.5 text-sm sm:text-base">
+                            <span>Сравнить авто и отопление</span>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+                            </svg>
+                        </a>
+                        <a href="#quiz" class="bg-obsidian-800 hover:bg-obsidian-850 border border-[#3a1f27] text-cream font-semibold px-6 py-3.5 rounded-xl transition text-sm sm:text-base">
+                            Пройти опрос
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Правая часть: Живой виджет Датчик AQI Бишкек -->
+                <div class="lg:col-span-5">
+                    <div class="card-surface rounded-3xl p-6 sm:p-7 relative overflow-hidden">
+                        <div class="flex items-center justify-between border-b border-[#2a181e] pb-4 mb-5">
+                            <div>
+                                <span class="text-xs font-mono uppercase tracking-wider text-bordeaux-400 block">Датчик AQI Бишкек</span>
+                                <h2 id="aqi-location-title" class="font-display font-bold text-lg text-cream mt-0.5">Зима • Жилмассивы и центр</h2>
+                            </div>
+                            <span id="aqi-status-pill" class="px-3 py-1 rounded-lg font-mono text-xs font-bold bg-bordeaux-950 text-bordeaux-400 border border-bordeaux-700/70">
+                                ОПАСНО
+                            </span>
+                        </div>
+
+                        <!-- Переключатель режимов датчика -->
+                        <div class="grid grid-cols-2 gap-2 p-1 rounded-xl bg-obsidian-950 border border-[#2a181e] mb-6">
+                            <button id="btn-aqi-winter" onclick="setAqiMode('winter')" class="py-2 px-3 rounded-lg text-xs font-semibold bg-bordeaux-600 text-white transition">
+                                Зима: уголь + ДВС
+                            </button>
+                            <button id="btn-aqi-clean" onclick="setAqiMode('clean')" class="py-2 px-3 rounded-lg text-xs font-semibold text-neutral-400 hover:text-cream transition">
+                                После: газ + EV
+                            </button>
+                        </div>
+
+                        <!-- Цифры AQI и PM2.5 -->
+                        <div class="flex items-end justify-between mb-4">
+                            <div>
+                                <div class="text-xs text-neutral-400 mb-1">Индекс качества воздуха (AQI)</div>
+                                <div id="aqi-number" class="font-mono font-extrabold text-5xl sm:text-6xl text-bordeaux-500 tracking-tighter">312</div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-xs text-neutral-400 mb-1">Частицы PM2.5</div>
+                                <div id="pm25-number" class="font-mono font-bold text-xl sm:text-2xl text-cream">262 мкг/м³</div>
+                                <div id="pm25-norm" class="text-[11px] text-bordeaux-400 font-medium mt-0.5">Выше нормы ВОЗ в 17 раз</div>
+                            </div>
+                        </div>
+
+                        <!-- Визуальная шкала -->
+                        <div class="w-full h-3 rounded-full bg-obsidian-950 p-0.5 border border-[#2a181e] mb-4 overflow-hidden">
+                            <div id="aqi-bar" class="h-full rounded-full bg-gradient-to-r from-bordeaux-700 via-bordeaux-500 to-rose-400 transition-all duration-500" style="width: 88%"></div>
+                        </div>
+
+                        <p id="aqi-desc" class="text-xs sm:text-sm text-cream/75 leading-relaxed bg-obsidian-950/70 p-3.5 rounded-xl border border-[#2a181e]">
+                            Плотная инверсия прижимает дым от топки углем и выхлопы машин без катализаторов. Рекомендуется респиратор класса FFP2 и закрытые окна.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 2. Раздел «Откуда берется смог и как его победить» -->
+    <section id="reasons" class="py-20 border-b border-[#2a181e]">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6">
+            <div class="max-w-2xl mb-12">
+                <span class="font-mono text-xs uppercase tracking-widest text-bordeaux-400 block mb-2">01 // Главные факторы</span>
+                <h2 class="font-display font-extrabold text-2xl sm:text-4xl text-bordeaux-400">
+                    Откуда берется смог и как его победить
+                </h2>
+                <p class="text-cream/80 mt-3 text-sm sm:text-base leading-relaxed">
+                    Смог в Бишкеке — это не одна проблема, а связка из отопления, старого автопарка и застройки города. Вот три главных направления, где уже идут реальные изменения.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Карточка 1: Отопление -->
+                <article class="card-surface rounded-3xl p-6 sm:p-7 flex flex-col justify-between">
+                    <div>
+                        <div class="w-12 h-12 rounded-2xl bg-bordeaux-950 border border-bordeaux-700/60 flex items-center justify-center text-bordeaux-400 mb-5">
+                            <!-- Иконка огня / газа -->
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9.879 16.121A3 3 0 1012.015 11L11 14H9c0 .768.293 1.536.879 2.121z"/>
+                            </svg>
+                        </div>
+                        <span class="font-mono text-[11px] uppercase tracking-wider text-bordeaux-400">Частный сектор и бани</span>
+                        <h3 class="font-display font-bold text-xl text-bordeaux-400 mt-1 mb-3">Отопление: от шин к газу</h3>
+                        <p class="text-sm text-cream/80 leading-relaxed mb-4">
+                            Зимой в жилмассивах вокруг города частные дома и бани топят дешевым углем, а некоторые сжигают старые шины, пластик и швейные отходы. При горении резины в воздух летит бензапирен, диоксины и тяжелая сажа.
+                        </p>
+                    </div>
+                    <div class="pt-4 border-t border-[#2a181e] space-y-2 text-xs text-cream/90">
+                        <div class="flex items-start gap-2">
+                            <span class="text-bordeaux-400 font-bold">→</span>
+                            <span><strong>Штрафы и рейды:</strong> за сжигание шин и мусора экоинспекция выписывает крупные штрафы (от 7 500 до 23 000 сомов и выше).</span>
+                        </div>
+                        <div class="flex items-start gap-2">
+                            <span class="text-bordeaux-400 font-bold">→</span>
+                            <span><strong>Газификация:</strong> подключение жилмассивов к природному газу и льготные кредиты на газовые котлы и тепловые насосы.</span>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Карточка 2: Транспорт -->
+                <article class="card-surface rounded-3xl p-6 sm:p-7 flex flex-col justify-between">
+                    <div>
+                        <div class="w-12 h-12 rounded-2xl bg-bordeaux-950 border border-bordeaux-700/60 flex items-center justify-center text-bordeaux-400 mb-5">
+                            <!-- Иконка электромобиля / молнии -->
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                            </svg>
+                        </div>
+                        <span class="font-mono text-[11px] uppercase tracking-wider text-bordeaux-400">Автопарк столицы</span>
+                        <h3 class="font-display font-bold text-xl text-bordeaux-400 mt-1 mb-3">ДВС против Гибридов и EV</h3>
+                        <p class="text-sm text-cream/80 leading-relaxed mb-4">
+                            В Бишкеке зарегистрировано больше 400 тысяч машин. Главный удар по воздуху наносят старые авто с ДВС, у которых вырезали катализаторы ради продажи драгметаллов — такие машины чадят в десятки раз сильнее нормы.
+                        </p>
+                    </div>
+                    <div class="pt-4 border-t border-[#2a181e] space-y-2 text-xs text-cream/90">
+                        <div class="flex items-start gap-2">
+                            <span class="text-bordeaux-400 font-bold">→</span>
+                            <span><strong>Бум электрокаров и гибридов:</strong> зеленые номера, нулевая растаможка, зарядные станции по всему городу и такси на EV.</span>
+                        </div>
+                        <div class="flex items-start gap-2">
+                            <span class="text-bordeaux-400 font-bold">→</span>
+                            <span><strong>Общественный транспорт:</strong> замена старых дизельных маршруток на современные газовые и электрические автобусы.</span>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Карточка 3: Роза ветров -->
+                <article class="card-surface rounded-3xl p-6 sm:p-7 flex flex-col justify-between">
+                    <div>
+                        <div class="w-12 h-12 rounded-2xl bg-bordeaux-950 border border-bordeaux-700/60 flex items-center justify-center text-bordeaux-400 mb-5">
+                            <!-- Иконка ветра -->
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9.59 4.59A2 2 0 1111 8H2m10.59 11.41A2 2 0 1014 16H2m15.73-8.27A2.5 2.5 0 1119.5 12H2"/>
+                            </svg>
+                        </div>
+                        <span class="font-mono text-[11px] uppercase tracking-wider text-bordeaux-400">География и зеленый пояс</span>
+                        <h3 class="font-display font-bold text-xl text-bordeaux-400 mt-1 mb-3">Роза ветров и зеленый щит</h3>
+                        <p class="text-sm text-cream/80 leading-relaxed mb-4">
+                            Бишкек стоит у подножия хребта Кыргызский Ала-Тоо. Ночью с гор в долину спускается свежий бриз, который должен выдувать дым. Но хаотичная многоэтажная застройка на юге города работает как стена и перекрывает воздушные коридоры.
+                        </p>
+                    </div>
+                    <div class="pt-4 border-t border-[#2a181e] space-y-2 text-xs text-cream/90">
+                        <div class="flex items-start gap-2">
+                            <span class="text-bordeaux-400 font-bold">→</span>
+                            <span><strong>Продуваемые коридоры:</strong> запрет на плотную высотную застройку вдоль русел рек Ала-Арча и Аламедин.</span>
+                        </div>
+                        <div class="flex items-start gap-2">
+                            <span class="text-bordeaux-400 font-bold">→</span>
+                            <span><strong>Полив и парки:</strong> восстановление арыков и защита Карагачевой рощи и Ботанического сада — легких столицы.</span>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <!-- 3. Интерактивный симулятор-сравнение «Авто и Отопление: Вклад в воздух города» -->
+    <section id="compare" class="py-20 bg-obsidian-900/60 border-b border-[#2a181e]">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6">
+            <div class="max-w-2xl mb-12">
+                <span class="font-mono text-xs uppercase tracking-widest text-bordeaux-400 block mb-2">02 // Интерактивное сравнение</span>
+                <h2 class="font-display font-extrabold text-2xl sm:text-4xl text-bordeaux-400">
+                    Авто и Отопление: Вклад в воздух города
+                </h2>
+                <p class="text-cream/80 mt-3 text-sm sm:text-base">
+                    Покликай по вариантам ниже, чтобы сравнить, сколько сажи, угарного газа и вредных частиц выделяет разный транспорт и способы отопления частного дома в Бишкеке.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Блок сравнения 1: Автопарк -->
+                <div class="card-surface rounded-3xl p-6 sm:p-8 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="font-mono text-xs uppercase text-bordeaux-400 font-bold">Сектор 1 • Транспорт (пробег 15 000 км/год)</span>
+                        </div>
+                        <h3 class="font-display font-bold text-xl text-cream mb-5">Выбери тип двигателя автомобиля:</h3>
+
+                        <!-- Кнопки переключения авто -->
+                        <div class="grid grid-cols-3 gap-2 p-1.5 rounded-2xl bg-obsidian-950 border border-[#2a181e] mb-6">
+                            <button onclick="selectCar('ice')" id="car-btn-ice" class="car-tab py-2.5 px-2 rounded-xl text-xs sm:text-sm font-bold bg-bordeaux-600 text-white transition">
+                                ДВС (без катал.)
+                            </button>
+                            <button onclick="selectCar('hybrid')" id="car-btn-hybrid" class="car-tab py-2.5 px-2 rounded-xl text-xs sm:text-sm font-bold text-neutral-400 hover:text-cream transition">
+                                Гибрид (HEV)
+                            </button>
+                            <button onclick="selectCar('ev')" id="car-btn-ev" class="car-tab py-2.5 px-2 rounded-xl text-xs sm:text-sm font-bold text-neutral-400 hover:text-cream transition">
+                                Электрокар (EV)
+                            </button>
+                        </div>
+
+                        <!-- Карточка показателей авто -->
+                        <div id="car-stats-box" class="space-y-4">
+                            <!-- Заполняется через JS -->
+                        </div>
+                    </div>
+
+                    <div id="car-verdict" class="mt-6 p-4 rounded-2xl bg-obsidian-950 border border-[#2a181e] text-xs sm:text-sm text-cream/85 leading-relaxed">
+                        <!-- Вердикт -->
+                    </div>
+                </div>
+
+                <!-- Блок сравнения 2: Отопление дома -->
+                <div class="card-surface rounded-3xl p-6 sm:p-8 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="font-mono text-xs uppercase text-bordeaux-400 font-bold">Сектор 2 • Частный дом 100 м² (отопительный сезон)</span>
+                        </div>
+                        <h3 class="font-display font-bold text-xl text-cream mb-5">Выбери способ отопления дома:</h3>
+
+                        <!-- Кнопки переключения отопления -->
+                        <div class="grid grid-cols-2 gap-2 p-1.5 rounded-2xl bg-obsidian-950 border border-[#2a181e] mb-6">
+                            <button onclick="selectHeat('coal')" id="heat-btn-coal" class="heat-tab py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold bg-bordeaux-600 text-white transition">
+                                Уголь и отходы (шины)
+                            </button>
+                            <button onclick="selectHeat('gas')" id="heat-btn-gas" class="heat-tab py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold text-neutral-400 hover:text-cream transition">
+                                Газовый котел
+                            </button>
+                        </div>
+
+                        <!-- Карточка показателей отопления -->
+                        <div id="heat-stats-box" class="space-y-4">
+                            <!-- Заполняется через JS -->
+                        </div>
+                    </div>
+
+                    <div id="heat-verdict" class="mt-6 p-4 rounded-2xl bg-obsidian-950 border border-[#2a181e] text-xs sm:text-sm text-cream/85 leading-relaxed">
+                        <!-- Вердикт -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 4. Мини-игра «Очисти небо над Бишкеком» -->
+    <section id="game" class="py-20 border-b border-[#2a181e] relative">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6">
+            <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
+                <div>
+                    <span class="font-mono text-xs uppercase tracking-widest text-bordeaux-400 block mb-2">03 // Интерактивная аркада</span>
+                    <h2 class="font-display font-extrabold text-2xl sm:text-4xl text-bordeaux-400">
+                        Мини-игра: «Очисти небо над Бишкеком»
+                    </h2>
+                    <p class="text-cream/80 mt-2 text-sm sm:text-base max-w-2xl">
+                        Управляй воздушным фильтром эко-патруля (мышкой, пальцем или стрелками ← →). Лови источники смога и собирай бонусы, чтобы за <strong class="text-cream">45 секунд</strong> сбить AQI с <span class="font-mono text-bordeaux-400 font-bold">350</span> до <span class="font-mono text-emerald-400 font-bold">25</span>!
+                    </p>
+                </div>
+                <div class="flex items-center gap-3 font-mono text-xs bg-obsidian-850 border border-[#2a181e] px-4 py-2.5 rounded-xl self-start">
+                    <span class="text-neutral-400">Рекорд очков:</span>
+                    <span id="game-best-score" class="text-bordeaux-400 font-bold text-base">0</span>
+                </div>
+            </div>
+
+            <!-- Легенда игры -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5 text-xs">
+                <div class="bg-obsidian-850 border border-[#2a181e] rounded-xl p-3 flex items-center gap-2.5">
+                    <span class="w-3 h-3 rounded-full bg-neutral-500 flex-shrink-0"></span>
+                    <span><strong>Дым от шин / угля:</strong> лови (-12 AQI)</span>
+                </div>
+                <div class="bg-obsidian-850 border border-[#2a181e] rounded-xl p-3 flex items-center gap-2.5">
+                    <span class="w-3 h-3 rounded-full bg-amber-600 flex-shrink-0"></span>
+                    <span><strong>Выхлоп ДВС:</strong> лови (-10 AQI)</span>
+                </div>
+                <div class="bg-obsidian-850 border border-[#2a181e] rounded-xl p-3 flex items-center gap-2.5">
+                    <span class="w-3 h-3 rounded-full bg-bordeaux-500 flex-shrink-0"></span>
+                    <span><strong>EV / Газ:</strong> бонус (-25 AQI)</span>
+                </div>
+                <div class="bg-obsidian-850 border border-[#2a181e] rounded-xl p-3 flex items-center gap-2.5">
+                    <span class="w-3 h-3 rounded-full bg-sky-400 flex-shrink-0"></span>
+                    <span><strong>Ветер Ала-Арчи:</strong> супер (-35 AQI)</span>
+                </div>
+            </div>
+
+            <!-- Контейнер Canvas -->
+            <div class="card-surface rounded-3xl p-3 sm:p-4 relative overflow-hidden">
+                <!-- Верхняя панель HUD -->
+                <div class="flex flex-wrap items-center justify-between gap-3 px-3 py-2.5 mb-2 rounded-2xl bg-obsidian-950 border border-[#2a181e] font-mono text-xs sm:text-sm">
+                    <div class="flex items-center gap-2">
+                        <span class="text-neutral-400">AQI:</span>
+                        <span id="hud-aqi" class="font-extrabold text-bordeaux-400 text-base sm:text-lg">350</span>
+                        <span id="hud-aqi-label" class="text-[11px] px-2 py-0.5 rounded bg-bordeaux-950 text-bordeaux-400">ОПАСНО</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-neutral-400">Время:</span>
+                        <span id="hud-time" class="font-bold text-cream text-base">45с</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-neutral-400">Очки:</span>
+                        <span id="hud-score" class="font-bold text-bordeaux-400 text-base">0</span>
+                    </div>
+                </div>
+
+                <!-- Холст игры -->
+                <div id="canvas-wrapper" class="relative w-full h-[360px] sm:h-[420px] rounded-2xl overflow-hidden bg-obsidian-950 border border-[#2a181e]">
+                    <canvas id="smogCanvas" class="w-full h-full block"></canvas>
+
+                    <!-- Стартовый / Финальный оверлей -->
+                    <div id="game-overlay" class="absolute inset-0 bg-obsidian-950/85 backdrop-blur-sm flex flex-col items-center justify-center p-6 text-center">
+                        <div id="overlay-badge" class="px-3 py-1 rounded-full bg-bordeaux-950 border border-bordeaux-700 text-bordeaux-400 font-mono text-xs uppercase mb-3">
+                            Эко-патруль Бишкек
+                        </div>
+                        <h3 id="overlay-title" class="font-display font-black text-2xl sm:text-3xl text-cream mb-2">
+                            Готов очистить небо над столицей?
+                        </h3>
+                        <p id="overlay-text" class="text-cream/75 text-xs sm:text-sm max-w-md mb-6 leading-relaxed">
+                            Не пропускай клубы черного дыма вниз к домам (пропуск повышает AQI) и лови их фильтром. Двигай платформу мышкой, пальцем или стрелками.
+                        </p>
+                        <button id="start-game-btn" onclick="startGame()" class="bg-bordeaux-600 hover:bg-bordeaux-500 text-white font-display font-bold px-8 py-3.5 rounded-2xl shadow-lg shadow-bordeaux-600/30 transition transform active:scale-95 text-sm sm:text-base">
+                            Запустить очистку
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 5. Интерактивный опрос / викторина -->
+    <section id="quiz" class="py-20">
+        <div class="max-w-3xl mx-auto px-4 sm:px-6">
+            <div class="text-center mb-10">
+                <span class="font-mono text-xs uppercase tracking-widest text-bordeaux-400 block mb-2">04 // Проверка знаний</span>
+                <h2 class="font-display font-extrabold text-2xl sm:text-4xl text-bordeaux-400">
+                    Насколько ты шаришь за экологию Бишкека?
+                </h2>
+                <p class="text-cream/80 mt-2 text-sm sm:text-base">
+                    6 вопросов про реальную ситуацию в городе: шины, катализаторы, инверсию, штрафы и электромобили.
+                </p>
+            </div>
+
+            <div class="card-surface rounded-3xl p-6 sm:p-9">
+                <!-- Активный вопрос -->
+                <div id="quiz-main">
+                    <div class="flex items-center justify-between font-mono text-xs mb-4">
+                        <span id="quiz-progress-text" class="text-bordeaux-400 font-bold">ВОПРОС 1 / 6</span>
+                        <span id="quiz-score-text" class="text-neutral-400">Верных ответов: 0</span>
+                    </div>
+
+                    <div class="w-full h-1.5 bg-obsidian-950 rounded-full mb-7 overflow-hidden">
+                        <div id="quiz-bar" class="h-full bg-bordeaux-500 transition-all duration-300" style="width: 16.6%"></div>
+                    </div>
+
+                    <h3 id="quiz-question" class="font-display font-bold text-lg sm:text-2xl text-cream mb-6 leading-snug">
+                        Загрузка...
+                    </h3>
+
+                    <div id="quiz-options" class="space-y-3">
+                        <!-- Варианты ответов -->
+                    </div>
+
+                    <!-- Пояснение после ответа -->
+                    <div id="quiz-explanation" class="hidden mt-6 p-4 sm:p-5 rounded-2xl bg-obsidian-950 border border-[#3a1f27]">
+                        <div id="quiz-exp-title" class="font-display font-bold text-sm sm:text-base mb-1"></div>
+                        <p id="quiz-exp-body" class="text-xs sm:text-sm text-cream/80 leading-relaxed"></p>
+                        <div class="mt-4 flex justify-end">
+                            <button id="quiz-next-btn" onclick="nextQuestion()" class="bg-bordeaux-600 hover:bg-bordeaux-500 text-white font-semibold px-5 py-2.5 rounded-xl text-xs sm:text-sm transition">
+                                Дальше →
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Итог опроса -->
+                <div id="quiz-result" class="hidden text-center py-4">
+                    <div class="w-16 h-16 rounded-2xl bg-bordeaux-950 border border-bordeaux-600 text-bordeaux-400 font-mono font-extrabold text-2xl flex items-center justify-center mx-auto mb-4" id="quiz-final-score">
+                        6/6
+                    </div>
+                    <span class="font-mono text-xs uppercase tracking-wider text-bordeaux-400">Твой результат</span>
+                    <h3 id="quiz-rank-title" class="font-display font-black text-2xl sm:text-3xl text-cream mt-1 mb-3">
+                        Эксперт по воздуху Бишкека
+                    </h3>
+                    <p id="quiz-rank-desc" class="text-cream/80 text-sm sm:text-base max-w-lg mx-auto mb-7 leading-relaxed">
+                        Отличный результат! Ты точно знаешь, откуда берется смог и какие шаги реально спасают наш город.
+                    </p>
+                    <button onclick="restartQuiz()" class="bg-bordeaux-600 hover:bg-bordeaux-500 text-white font-semibold px-7 py-3 rounded-xl transition text-sm">
+                        Пройти опрос еще раз
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 6. Подвал (Footer) -->
+    <footer class="bg-obsidian-950 border-t border-[#2a181e] py-10">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs sm:text-sm text-neutral-400">
+            <div class="flex items-center gap-2.5">
+                <span class="w-2.5 h-2.5 rounded-full bg-bordeaux-500"></span>
+                <span class="font-display font-bold text-bordeaux-400">ЧИСТЫЙ БИШКЕК</span>
+            </div>
+            <div class="text-center sm:text-right font-medium text-cream/80">
+                Проект подготовил ученик 11 класса • Бишкек, 2026
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Мобильное меню
+        const menuBtn = document.getElementById('menu-btn');
+        const mobileNav = document.getElementById('mobile-nav');
+        menuBtn.addEventListener('click', () => mobileNav.classList.toggle('hidden'));
+        mobileNav.querySelectorAll('a').forEach(a => a.addEventListener('click', () => mobileNav.classList.add('hidden')));
+
+        // ==============================================
+        // 1. ВИДЖЕТ ДАТЧИКА AQI БИШКЕК (HERO)
+        // ==============================================
+        function setAqiMode(mode) {
+            const btnWinter = document.getElementById('btn-aqi-winter');
+            const btnClean = document.getElementById('btn-aqi-clean');
+            const title = document.getElementById('aqi-location-title');
+            const pill = document.getElementById('aqi-status-pill');
+            const num = document.getElementById('aqi-number');
+            const pm = document.getElementById('pm25-number');
+            const norm = document.getElementById('pm25-norm');
+            const bar = document.getElementById('aqi-bar');
+            const desc = document.getElementById('aqi-desc');
+
+            if (mode === 'winter') {
+                btnWinter.className = 'py-2 px-3 rounded-lg text-xs font-semibold bg-bordeaux-600 text-white transition';
+                btnClean.className = 'py-2 px-3 rounded-lg text-xs font-semibold text-neutral-400 hover:text-cream transition';
+                title.textContent = 'Зима • Жилмассивы и центр';
+                pill.textContent = 'ОПАСНО';
+                pill.className = 'px-3 py-1 rounded-lg font-mono text-xs font-bold bg-bordeaux-950 text-bordeaux-400 border border-bordeaux-700/70';
+                num.textContent = '312';
+                num.className = 'font-mono font-extrabold text-5xl sm:text-6xl text-bordeaux-500 tracking-tighter';
+                pm.textContent = '262 мкг/м³';
+                norm.textContent = 'Выше нормы ВОЗ в 17 раз';
+                norm.className = 'text-[11px] text-bordeaux-400 font-medium mt-0.5';
+                bar.style.width = '88%';
+                bar.className = 'h-full rounded-full bg-gradient-to-r from-bordeaux-700 via-bordeaux-500 to-rose-400 transition-all duration-500';
+                desc.textContent = 'Плотная инверсия прижимает дым от топки углем и выхлопы машин без катализаторов. Рекомендуется респиратор класса FFP2 и закрытые окна.';
+            } else {
+                btnClean.className = 'py-2 px-3 rounded-lg text-xs font-semibold bg-bordeaux-600 text-white transition';
+                btnWinter.className = 'py-2 px-3 rounded-lg text-xs font-semibold text-neutral-400 hover:text-cream transition';
+                title.textContent = 'Прогноз • Газ + Электрокары';
+                pill.textContent = 'ЧИСТО';
+                pill.className = 'px-3 py-1 rounded-lg font-mono text-xs font-bold bg-emerald-950 text-emerald-400 border border-emerald-700/70';
+                num.textContent = '28';
+                num.className = 'font-mono font-extrabold text-5xl sm:text-6xl text-emerald-400 tracking-tighter';
+                pm.textContent = '7 мкг/м³';
+                norm.textContent = 'В пределах нормы ВОЗ';
+                norm.className = 'text-[11px] text-emerald-400 font-medium mt-0.5';
+                bar.style.width = '14%';
+                bar.className = 'h-full rounded-full bg-gradient-to-r from-emerald-600 to-teal-400 transition-all duration-500';
+                desc.textContent = 'Газификация частного сектора убирает сажу от печей, а переход на электромобили и гибриды снижает уличные выбросы оксидов азота на 75%.';
+            }
+        }
+
+        // ==============================================
+        // 2. ИНТЕРАКТИВНОЕ СРАВНЕНИЕ: АВТО И ОТОПЛЕНИЕ
+        // ==============================================
+        const carData = {
+            ice: {
+                co2: '3 450 кг / год',
+                soot: 'Высокий выброс сажи и NOx (95%)',
+                sootPercent: 95,
+                cost: '~115 000 сом / год на бензин',
+                verdict: 'Старый автомобиль с ДВС, особенно с вырезанным катализатором, выбрасывает в воздух Бишкека угарный газ, оксиды азота и канцерогены прямо на уровне дыхания пешеходов.'
+            },
+            hybrid: {
+                co2: '1 850 кг / год',
+                soot: 'Низкий выброс в пробках (42%)',
+                sootPercent: 42,
+                cost: '~62 000 сом / год на топливо',
+                verdict: 'Гибрид (HEV) в городских пробках Бишкека большую часть времени едет на электротяге и рекуперирует энергию при торможении. Отличный переходный вариант для столицы.'
+            },
+            ev: {
+                co2: '0 кг (локально в городе)',
+                soot: 'Нулевой выхлоп в воздух (0%)',
+                sootPercent: 4,
+                cost: '~24 000 сом / год на зарядку',
+                verdict: 'Электромобиль (EV) вообще не имеет выхлопной трубы. В Кыргызстане более 85% электричества вырабатывают ГЭС, поэтому езда на электрокаре максимально чистая и в 4–5 раз дешевле бензина.'
+            }
+        };
+
+        function selectCar(type) {
+            ['ice', 'hybrid', 'ev'].forEach(t => {
+                const btn = document.getElementById(`car-btn-${t}`);
+                if (t === type) {
+                    btn.className = 'car-tab py-2.5 px-2 rounded-xl text-xs sm:text-sm font-bold bg-bordeaux-600 text-white transition';
+                } else {
+                    btn.className = 'car-tab py-2.5 px-2 rounded-xl text-xs sm:text-sm font-bold text-neutral-400 hover:text-cream transition';
+                }
+            });
+
+            const item = carData[type];
+            document.getElementById('car-stats-box').innerHTML = `
+                <div class="p-4 rounded-2xl bg-obsidian-950 border border-[#2a181e]">
+                    <div class="flex justify-between text-xs mb-1.5">
+                        <span class="text-neutral-400">Вклад в городской смог и сажу:</span>
+                        <span class="font-mono font-bold text-bordeaux-400">${item.soot}</span>
+                    </div>
+                    <div class="w-full h-2.5 rounded-full bg-obsidian-800 overflow-hidden">
+                        <div class="h-full rounded-full bg-bordeaux-500 transition-all duration-500" style="width: ${item.sootPercent}%"></div>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div class="p-4 rounded-2xl bg-obsidian-950 border border-[#2a181e]">
+                        <span class="text-[11px] text-neutral-400 block">Прямые выбросы CO₂</span>
+                        <span class="font-mono font-bold text-base text-cream mt-1 block">${item.co2}</span>
+                    </div>
+                    <div class="p-4 rounded-2xl bg-obsidian-950 border border-[#2a181e]">
+                        <span class="text-[11px] text-neutral-400 block">Расходы владельца</span>
+                        <span class="font-mono font-bold text-base text-bordeaux-400 mt-1 block">${item.cost}</span>
+                    </div>
+                </div>
+            `;
+            document.getElementById('car-verdict').textContent = item.verdict;
+        }
+
+        const heatData = {
+            coal: {
+                pm25: 'Критически высокий (92%)',
+                pmPercent: 92,
+                fine: 'Штраф до 23 000 сом за шины и отходы',
+                comfort: 'Нужно чистить золу, дым во дворе',
+                verdict: 'Топка сырым углем, а тем более автопокрышками и швейными обрезками — главный источник черного дыма над жилмассивами Бишкека. При сжигании резины выделяются ядовитые диоксины.'
+            },
+            gas: {
+                pm25: 'Минимальный — нет сажи (8%)',
+                pmPercent: 8,
+                fine: '0 сом • Полностью экологично',
+                comfort: 'Автоматика, чисто во дворе и в доме',
+                verdict: 'Природный газ при сгорании дает только водяной пар и углекислый газ — никакой сажи, серы и частиц PM2.5. Газификация жилмассивов сразу убирает плотный дым над частным сектором.'
+            }
+        };
+
+        function selectHeat(type) {
+            ['coal', 'gas'].forEach(t => {
+                const btn = document.getElementById(`heat-btn-${t}`);
+                if (t === type) {
+                    btn.className = 'heat-tab py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold bg-bordeaux-600 text-white transition';
+                } else {
+                    btn.className = 'heat-tab py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold text-neutral-400 hover:text-cream transition';
+                }
+            });
+
+            const item = heatData[type];
+            document.getElementById('heat-stats-box').innerHTML = `
+                <div class="p-4 rounded-2xl bg-obsidian-950 border border-[#2a181e]">
+                    <div class="flex justify-between text-xs mb-1.5">
+                        <span class="text-neutral-400">Выброс вредных частиц PM2.5:</span>
+                        <span class="font-mono font-bold text-bordeaux-400">${item.pm25}</span>
+                    </div>
+                    <div class="w-full h-2.5 rounded-full bg-obsidian-800 overflow-hidden">
+                        <div class="h-full rounded-full bg-bordeaux-500 transition-all duration-500" style="width: ${item.pmPercent}%"></div>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div class="p-4 rounded-2xl bg-obsidian-950 border border-[#2a181e]">
+                        <span class="text-[11px] text-neutral-400 block">Закон и штрафы</span>
+                        <span class="font-mono font-bold text-sm text-bordeaux-400 mt-1 block">${item.fine}</span>
+                    </div>
+                    <div class="p-4 rounded-2xl bg-obsidian-950 border border-[#2a181e]">
+                        <span class="text-[11px] text-neutral-400 block">Удобство в быту</span>
+                        <span class="font-mono font-bold text-sm text-cream mt-1 block">${item.comfort}</span>
+                    </div>
+                </div>
+            `;
+            document.getElementById('heat-verdict').textContent = item.verdict;
+        }
+
+        // Инициализация вкладок сравнения
+        selectCar('ice');
+        selectHeat('coal');
+
+        // ==============================================
+        // 3. МИНИ-ИГРА «ОЧИСТИ НЕБО НАД БИШКЕКОМ»
+        // ==============================================
+        const canvas = document.getElementById('smogCanvas');
+        const ctx = canvas.getContext('2d');
+        const wrapper = document.getElementById('canvas-wrapper');
+
+        let gameRunning = false;
+        let aqi = 350;
+        let score = 0;
+        let bestScore = parseInt(localStorage.getItem('bishkek_smog_best') || '0', 10);
+        document.getElementById('game-best-score').textContent = bestScore;
+
+        let timeLeft = 45;
+        let lastTime = 0;
+        let spawnTimer = 0;
+        let timerAccumulator = 0;
+        let items = [];
+        let particles = [];
+        let keys = { left: false, right: false };
+
+        const paddle = {
+            x: 0,
+            y: 0,
+            width: 110,
+            height: 16,
+            speed: 520
+        };
+
+        function resizeCanvas() {
+            const rect = wrapper.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+            paddle.width = Math.max(85, Math.min(130, canvas.width * 0.16));
+            paddle.y = canvas.height - 34;
+            if (!gameRunning) {
+                paddle.x = (canvas.width - paddle.width) / 2;
+                drawIdleScene();
+            } else {
+                paddle.x = Math.min(canvas.width - paddle.width, Math.max(0, paddle.x));
+            }
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+
+        // Управление клавиатурой
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') keys.left = true;
+            if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') keys.right = true;
+        });
+        window.addEventListener('keyup', (e) => {
+            if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') keys.left = false;
+            if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') keys.right = false;
+        });
+
+        // Управление мышью и тачем
+        function movePaddleToClientX(clientX) {
+            if (!gameRunning) return;
+            const rect = canvas.getBoundingClientRect();
+            const relX = clientX - rect.left;
+            paddle.x = Math.max(0, Math.min(canvas.width - paddle.width, relX - paddle.width / 2));
+        }
+        canvas.addEventListener('mousemove', (e) => movePaddleToClientX(e.clientX));
+        canvas.addEventListener('touchmove', (e) => {
+            if (e.touches.length > 0) {
+                movePaddleToClientX(e.touches[0].clientX);
+            }
+        }, { passive: true });
+        canvas.addEventListener('touchstart', (e) => {
+            if (e.touches.length > 0) {
+                movePaddleToClientX(e.touches[0].clientX);
+            }
+        }, { passive: true });
+
+        const itemTypes = [
+            { id: 'tire', label: 'ШИНЫ', color: '#52525b', border: '#a1a1aa', radius: 22, aqiDelta: -12, missPenalty: 10, pts: 15, speed: 175 },
+            { id: 'dvs', label: 'ДВС', color: '#92400e', border: '#f59e0b', radius: 20, aqiDelta: -10, missPenalty: 8, pts: 12, speed: 200 },
+            { id: 'ev', label: 'EV/ГАЗ', color: '#b82946', border: '#fb7185', radius: 21, aqiDelta: -25, missPenalty: 0, pts: 30, speed: 230 },
+            { id: 'wind', label: 'ВЕТЕР', color: '#0284c7', border: '#38bdf8', radius: 19, aqiDelta: -35, missPenalty: 0, pts: 45, speed: 265 }
+        ];
+
+        function spawnItem() {
+            const roll = Math.random();
+            let type;
+            if (roll < 0.42) type = itemTypes[0];      // Шины / уголь
+            else if (roll < 0.76) type = itemTypes[1]; // Выхлоп ДВС
+            else if (roll < 0.92) type = itemTypes[2]; // Бонус EV / Газ
+            else type = itemTypes[3];                  // Супербонус горный ветер
+
+            const margin = type.radius + 10;
+            items.push({
+                ...type,
+                x: margin + Math.random() * (canvas.width - margin * 2),
+                y: -type.radius,
+                vy: type.speed + Math.random() * 55
+            });
+        }
+
+        function createBurst(x, y, color) {
+            for (let i = 0; i < 10; i++) {
+                const angle = (Math.PI * 2 * i) / 10;
+                const spd = 60 + Math.random() * 90;
+                particles.push({
+                    x,
+                    y,
+                    vx: Math.cos(angle) * spd,
+                    vy: Math.sin(angle) * spd,
+                    life: 0.45,
+                    color
+                });
+            }
+        }
+
+        function drawMountainsSilhouette() {
+            const w = canvas.width;
+            const h = canvas.height;
+            // Задний хребет Ала-Тоо
+            ctx.fillStyle = '#18181f';
+            ctx.beginPath();
+            ctx.moveTo(0, h);
+            ctx.lineTo(0, h * 0.68);
+            ctx.lineTo(w * 0.18, h * 0.45);
+            ctx.lineTo(w * 0.35, h * 0.62);
+            ctx.lineTo(w * 0.55, h * 0.38);
+            ctx.lineTo(w * 0.76, h * 0.58);
+            ctx.lineTo(w * 0.92, h * 0.44);
+            ctx.lineTo(w, h * 0.64);
+            ctx.lineTo(w, h);
+            ctx.closePath();
+            ctx.fill();
+
+            // Снежные вершины
+            ctx.strokeStyle = 'rgba(232, 228, 230, 0.14)';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        }
+
+        function drawIdleScene() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawMountainsSilhouette();
+        }
+
+        function updateHud() {
+            const hudAqi = document.getElementById('hud-aqi');
+            const hudLabel = document.getElementById('hud-aqi-label');
+            hudAqi.textContent = aqi;
+            document.getElementById('hud-time').textContent = `${Math.ceil(timeLeft)}с`;
+            document.getElementById('hud-score').textContent = score;
+
+            if (aqi > 200) {
+                hudAqi.className = 'font-extrabold text-bordeaux-400 text-base sm:text-lg';
+                hudLabel.textContent = 'ОПАСНО';
+                hudLabel.className = 'text-[11px] px-2 py-0.5 rounded bg-bordeaux-950 text-bordeaux-400';
+            } else if (aqi > 80) {
+                hudAqi.className = 'font-extrabold text-amber-400 text-base sm:text-lg';
+                hudLabel.textContent = 'УМЕРЕННО';
+                hudLabel.className = 'text-[11px] px-2 py-0.5 rounded bg-amber-950 text-amber-300';
+            } else {
+                hudAqi.className = 'font-extrabold text-emerald-400 text-base sm:text-lg';
+                hudLabel.textContent = 'ЧИСТО';
+                hudLabel.className = 'text-[11px] px-2 py-0.5 rounded bg-emerald-950 text-emerald-300';
+            }
+        }
+
+        function startGame() {
+            aqi = 350;
+            score = 0;
+            timeLeft = 45;
+            items = [];
+            particles = [];
+            spawnTimer = 0;
+            timerAccumulator = 0;
+            paddle.x = (canvas.width - paddle.width) / 2;
+            gameRunning = true;
+            document.getElementById('game-overlay').classList.add('hidden');
+            updateHud();
+            lastTime = performance.now();
+            requestAnimationFrame(gameLoop);
+        }
+
+        function endGame(won) {
+            gameRunning = false;
+            if (score > bestScore) {
+                bestScore = score;
+                localStorage.setItem('bishkek_smog_best', String(bestScore));
+                document.getElementById('game-best-score').textContent = bestScore;
+            }
+
+            const overlay = document.getElementById('game-overlay');
+            const badge = document.getElementById('overlay-badge');
+            const title = document.getElementById('overlay-title');
+            const text = document.getElementById('overlay-text');
+            const btn = document.getElementById('start-game-btn');
+
+            overlay.classList.remove('hidden');
+            if (won) {
+                badge.textContent = 'ПОБЕДА • ВОЗДУХ ЧИСТЫЙ';
+                title.textContent = 'Горы Ала-Тоо снова видно!';
+                text.textContent = `Ты снизил индекс смога AQI до ${aqi} и набрал ${score} очков. Отличный результат для эко-патруля!`;
+            } else {
+                badge.textContent = 'ВРЕМЯ ВЫШЛО';
+                title.textContent = `Итоговый AQI: ${aqi}`;
+                text.textContent = `Ты набрал ${score} очков. Чтобы сбить AQI до 25, старайся не пропускать клубы дыма от шин и ловить бонусы электрокаров и горного ветра.`;
+            }
+            btn.textContent = 'Сыграть еще раз';
+        }
+
+        function gameLoop(timestamp) {
+            if (!gameRunning) return;
+            const dt = Math.min(0.05, (timestamp - lastTime) / 1000);
+            lastTime = timestamp;
+
+            // Таймер
+            timeLeft -= dt;
+            if (timeLeft <= 0) {
+                timeLeft = 0;
+                updateHud();
+                endGame(aqi <= 25);
+                return;
+            }
+
+            // Движение платформы клавишами
+            if (keys.left) paddle.x -= paddle.speed * dt;
+            if (keys.right) paddle.x += paddle.speed * dt;
+            paddle.x = Math.max(0, Math.min(canvas.width - paddle.width, paddle.x));
+
+            // Спавн объектов
+            spawnTimer += dt;
+            if (spawnTimer >= 0.58) {
+                spawnTimer = 0;
+                spawnItem();
+            }
+
+            // Отрисовка фона с учетом уровня смога
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const smogAlpha = Math.max(0, Math.min(0.42, (aqi - 25) / 800));
+            ctx.fillStyle = `rgba(82, 32, 42, ${smogAlpha})`;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            drawMountainsSilhouette();
+
+            // Обновление и отрисовка падающих объектов
+            for (let i = items.length - 1; i >= 0; i--) {
+                const it = items[i];
+                it.y += it.vy * dt;
+
+                // Проверка столкновения с фильтром
+                const hitX = it.x + it.radius > paddle.x && it.x - it.radius < paddle.x + paddle.width;
+                const hitY = it.y + it.radius > paddle.y && it.y - it.radius < paddle.y + paddle.height;
+
+                if (hitX && hitY) {
+                    aqi = Math.max(25, aqi + it.aqiDelta);
+                    score += it.pts;
+                    createBurst(it.x, it.y, it.border);
+                    items.splice(i, 1);
+                    updateHud();
+
+                    if (aqi <= 25) {
+                        endGame(true);
+                        return;
+                    }
+                    continue;
+                }
+
+                // Улетел вниз
+                if (it.y - it.radius > canvas.height) {
+                    if (it.missPenalty > 0) {
+                        aqi = Math.min(400, aqi + it.missPenalty);
+                        updateHud();
+                    }
+                    items.splice(i, 1);
+                    continue;
+                }
+
+                // Рисуем кружок-объект
+                ctx.beginPath();
+                ctx.arc(it.x, it.y, it.radius, 0, Math.PI * 2);
+                ctx.fillStyle = it.color;
+                ctx.fill();
+                ctx.lineWidth = 2;
+                ctx.strokeStyle = it.border;
+                ctx.stroke();
+
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 9px JetBrains Mono, monospace';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(it.label, it.x, it.y);
+            }
+
+            // Частицы эффекта
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.x += p.vx * dt;
+                p.y += p.vy * dt;
+                p.life -= dt;
+                if (p.life <= 0) {
+                    particles.splice(i, 1);
+                    continue;
+                }
+                ctx.globalAlpha = Math.max(0, p.life * 2);
+                ctx.fillStyle = p.color;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.globalAlpha = 1;
+            }
+
+            // Платформа эко-фильтра
+            const grad = ctx.createLinearGradient(paddle.x, paddle.y, paddle.x + paddle.width, paddle.y);
+            grad.addColorStop(0, '#8f1d35');
+            grad.addColorStop(0.5, '#eb4d6d');
+            grad.addColorStop(1, '#8f1d35');
+
+            ctx.fillStyle = grad;
+            ctx.beginPath();
+            ctx.roundRect(paddle.x, paddle.y, paddle.width, paddle.height, 8);
+            ctx.fill();
+
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 10px JetBrains Mono, monospace';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('ЭКО-ФИЛЬТР', paddle.x + paddle.width / 2, paddle.y + paddle.height / 2 + 0.5);
+
+            updateHud();
+            requestAnimationFrame(gameLoop);
+        }
+
+        window.addEventListener('load', resizeCanvas);
+
+        // ==============================================
+        // 4. ИНТЕРАКТИВНЫЙ ОПРОС / ВИКТОРИНА
+        // ==============================================
+        const quizQuestions = [
+            {
+                q: 'Почему зимой смог в Бишкеке подолгу висит над городом и не рассеивается?',
+                options: [
+                    'Из-за температурной инверсии в котловине Чуйской долины, когда холодный воздух запирает дым у земли',
+                    'Из-за слишком высокой влажности воздуха в январе',
+                    'Потому что зимой в горах полностью исчезает снег'
+                ],
+                correct: 0,
+                exp: 'Бишкек расположен в котловине. Зимой слой теплого воздуха сверху работает как крышка и прижимает выхлопы и печной дым к поверхности земли.'
+            },
+            {
+                q: 'Что происходит, когда в частном секторе или банях сжигают старые автомобильные шины?',
+                options: [
+                    'Выделяется только обычный водяной пар',
+                    'В воздух попадают канцерогены (бензапирен, диоксины) и тяжелая сажа, а нарушителям грозит крупный штраф',
+                    'Это помогает быстрее прогреть атмосферу и разогнать туман'
+                ],
+                correct: 1,
+                exp: 'Сжигание резины и пластика строжайше запрещено: при горении выделяются ядовитые вещества, вызывающие болезни легких, поэтому экоинспекция проводит рейды и выписывает штрафы.'
+            },
+            {
+                q: 'Зачем в автомобилях с двигателем внутреннего сгорания (ДВС) нужен катализатор?',
+                options: [
+                    'Чтобы увеличить максимальную скорость на трассе',
+                    'Чтобы дожигать и нейтрализовать токсичные газы (CO и оксиды азота) в выхлопе',
+                    'Для охлаждения салона летом'
+                ],
+                correct: 1,
+                exp: 'Когда в Бишкеке с машин массово вырезали катализаторы ради сдачи драгметаллов, выхлоп одного такого авто по токсичности стал равен десятку исправных машин.'
+            },
+            {
+                q: 'Почему электромобили (EV) особенно эффективны именно в Кыргызстане?',
+                options: [
+                    'Потому что в Бишкеке вообще нет пробок',
+                    'У них нулевой локальный выхлоп в городе, а больше 85% электроэнергии в стране вырабатывают чистые ГЭС',
+                    'Потому что электрокары не нужно заряжать зимой'
+                ],
+                correct: 1,
+                exp: 'В отличие от стран, где электричество получают сжиганием угля, в Кыргызстане электрокары заряжаются от гидроэлектростанций и вообще не дымят на улицах Бишкека.'
+            },
+            {
+                q: 'Чем гибридный автомобиль (HEV) лучше обычного бензинового ДВС в бишкекских пробках?',
+                options: [
+                    'В пробках на малых скоростях он едет на электромоторе без работы бензинового двигателя и заряжает батарею при торможении',
+                    'Он ездит исключительно на дизельном топливе',
+                    'У гибридов нет колес стандартного размера'
+                ],
+                correct: 0,
+                exp: 'Именно в пробках обычный ДВС сжигает больше всего топлива вхолостую. Гибрид глушит бензиновый мотор и едет на батарее, сокращая расход и выхлопы почти вдвое.'
+            },
+            {
+                q: 'Какой способ отопления частного дома в жилмассивах Бишкека лучше всего избавляет район от черного дыма?',
+                options: [
+                    'Топка дешевым бурым углем с высокой зольностью',
+                    'Переход на природный газ (газовый котел) или электрические тепловые насосы',
+                    'Сжигание древесных опилок и старой мебели'
+                ],
+                correct: 1,
+                exp: 'При сгорании природного газа не образуется сажа и частицы PM2.5. Именно газификация жилмассивов вокруг столицы дает самый быстрый эффект по очистке воздуха.'
+            }
+        ];
+
+        let currentQ = 0;
+        let quizScore = 0;
+        let isAnswered = false;
+
+        function renderQuestion() {
+            isAnswered = false;
+            const item = quizQuestions[currentQ];
+
+            document.getElementById('quiz-progress-text').textContent = `ВОПРОС ${currentQ + 1} / ${quizQuestions.length}`;
+            document.getElementById('quiz-score-text').textContent = `Верных ответов: ${quizScore}`;
+            document.getElementById('quiz-bar').style.width = `${((currentQ + 1) / quizQuestions.length) * 100}%`;
+            document.getElementById('quiz-question').textContent = item.q;
+
+            const expBox = document.getElementById('quiz-explanation');
+            expBox.classList.add('hidden');
+
+            const optionsBox = document.getElementById('quiz-options');
+            optionsBox.innerHTML = '';
+
+            item.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = 'w-full text-left p-4 rounded-2xl bg-obsidian-950 border border-[#2a181e] hover:border-bordeaux-500 text-cream/90 text-sm sm:text-base transition flex items-start gap-3';
+                btn.innerHTML = `
+                    <span class="font-mono text-xs font-bold px-2 py-1 rounded bg-obsidian-800 text-bordeaux-400 mt-0.5">${idx + 1}</span>
+                    <span>${opt}</span>
+                `;
+                btn.addEventListener('click', () => checkAnswer(idx, btn));
+                optionsBox.appendChild(btn);
+            });
+        }
+
+        function checkAnswer(selectedIdx, selectedBtn) {
+            if (isAnswered) return;
+            isAnswered = true;
+
+            const item = quizQuestions[currentQ];
+            const buttons = document.getElementById('quiz-options').querySelectorAll('button');
+            const isRight = selectedIdx === item.correct;
+            if (isRight) quizScore++;
+
+            buttons.forEach((btn, idx) => {
+                btn.disabled = true;
+                if (idx === item.correct) {
+                    btn.className = 'w-full text-left p-4 rounded-2xl bg-emerald-950/60 border border-emerald-500 text-cream text-sm sm:text-base flex items-start gap-3';
+                } else if (idx === selectedIdx && !isRight) {
+                    btn.className = 'w-full text-left p-4 rounded-2xl bg-bordeaux-950/80 border border-bordeaux-500 text-cream text-sm sm:text-base flex items-start gap-3';
+                } else {
+                    btn.className = 'w-full text-left p-4 rounded-2xl bg-obsidian-950 border border-[#2a181e] opacity-45 text-cream text-sm sm:text-base flex items-start gap-3';
+                }
+            });
+
+            document.getElementById('quiz-score-text').textContent = `Верных ответов: ${quizScore}`;
+
+            const expTitle = document.getElementById('quiz-exp-title');
+            if (isRight) {
+                expTitle.textContent = 'Верно!';
+                expTitle.className = 'font-display font-bold text-sm sm:text-base mb-1 text-emerald-400';
+            } else {
+                expTitle.textContent = 'Не совсем так';
+                expTitle.className = 'font-display font-bold text-sm sm:text-base mb-1 text-bordeaux-400';
+            }
+            document.getElementById('quiz-exp-body').textContent = item.exp;
+            document.getElementById('quiz-next-btn').textContent = currentQ === quizQuestions.length - 1 ? 'Показать результат' : 'Дальше →';
+            document.getElementById('quiz-explanation').classList.remove('hidden');
+        }
+
+        function nextQuestion() {
+            currentQ++;
+            if (currentQ < quizQuestions.length) {
+                renderQuestion();
+            } else {
+                showQuizResult();
+            }
+        }
+
+        function showQuizResult() {
+            document.getElementById('quiz-main').classList.add('hidden');
+            document.getElementById('quiz-result').classList.remove('hidden');
+            document.getElementById('quiz-final-score').textContent = `${quizScore}/${quizQuestions.length}`;
+
+            const rankTitle = document.getElementById('quiz-rank-title');
+            const rankDesc = document.getElementById('quiz-rank-desc');
+
+            if (quizScore >= 5) {
+                rankTitle.textContent = 'Эксперт по чистому воздуху Бишкека';
+                rankDesc.textContent = 'Мощный результат! Ты отлично разбираешься в том, как устроен климат нашей долины и почему переход на газ и электротранспорт реально решает проблему смога.';
+            } else if (quizScore >= 3) {
+                rankTitle.textContent = 'Осознанный житель столицы';
+                rankDesc.textContent = 'Хороший уровень! Ты уже знаешь основные причины зимнего смога, а пару нюансов про катализаторы и инверсию теперь точно запомнишь.';
+            } else {
+                rankTitle.textContent = 'Новичок в теме экологии';
+                rankDesc.textContent = 'Ничего страшного — пробегись по карточкам выше про газовое отопление и электромобили и попробуй пройти тест еще раз!';
+            }
+        }
+
+        function restartQuiz() {
+            currentQ = 0;
+            quizScore = 0;
+            document.getElementById('quiz-result').classList.add('hidden');
+            document.getElementById('quiz-main').classList.remove('hidden');
+            renderQuestion();
+        }
+
+        renderQuestion();
+    </script>
+</body>
+</html>
